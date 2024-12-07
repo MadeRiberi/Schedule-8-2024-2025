@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheduler - Admin or Murid Biasa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            text-align: center;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 50px auto;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .choice-btn {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .choice-btn:hover {
+            background-color: #4cae4c;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"], 
+        input[type="password"],
+        input[type="date"],
+        input[type="time"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .login-btn, .add-task-btn, .logout-btn, .back-btn {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover, 
+        .add-task-btn:hover, 
+        .logout-btn:hover, 
+        .back-btn:hover {
+            background-color: #4cae4c;
+        }
+
+        .schedule-list {
+            margin-top: 20px;
+        }
+
+        .schedule-item {
+            background-color: #f9f9f9;
+            border-left: 5px solid #5cb85c;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .schedule-item span {
+            font-size: 16px;
+        }
+
+        .delete-btn {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CHOICE PAGE -->
+    <div class="container choice-page">
+        <h1>Choose Your Role</h1>
+        <button class="choice-btn" id="admin-choice">Admin</button>
+        <button class="choice-btn" id="student-choice">Murid Biasa</button>
+    </div>
+
+    <!-- ADMIN LOGIN PAGE -->
+    <div class="container login-page hidden">
+        <h1>Admin Login</h1>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Enter your username">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password">
+        </div>
+
+        <button class="login-btn">Login</button>
+        <button class="back-btn">Back</button>
+    </div>
+
+    <!-- ADMIN PAGE -->
+    <div class="container admin-page hidden">
+        <h1>Admin - Add Tasks</h1>
+        
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category">
+                <option value="exam">Exam</option>
+                <option value="homework">Homework</option>
+                <option value="project">Project</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="class">Class</label>
+            <select id="class">
+                <option value="8A">8A</option>
+                <option value="8B">8B</option>
+                <option value="8C">8C</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="task-name">Task Title</label>
+            <input type="text" id="task-name" placeholder="Enter task title">
+        </div>
+
+        <div class="form-group">
+            <label for="task-date">Task Date</label>
+            <input type="date" id="task-date">
+        </div>
+
+        <div class="form-group">
+            <label for="task-time">Task Time</label>
+            <input type="time" id="task-time">
+        </div>
+
+        <button class="add-task-btn">Add Task</button>
+
+        <h2>Task List</h2>
+        <div class="schedule-list" id="tasks-list"></div>
+
+        <button class="logout-btn">Logout</button>
+        <button class="back-btn">Back</button>
+    </div>
+
+    <!-- MURID BIASA PAGE -->
+    <div class="container student-page hidden">
+        <h1>Task List</h1>
+        <div class="schedule-list" id="student-tasks-list"></div>
+        <button class="logout-btn">Back to Home</button>
+        <button class="back-btn">Back</button>
+    </div>
+
+    <script>
+        // Choice Buttons
+        document.getElementById('admin-choice').addEventListener('click', () => {
+            document.querySelector('.choice-page').classList.add('hidden');
+            document.querySelector('.login-page').classList.remove('hidden');
+        });
+
+        document.getElementById('student-choice').addEventListener('click', () => {
+            document.querySelector('.choice-page').classList.add('hidden');
+            document.querySelector('.student-page').classList.remove('hidden');
+            displayTasks('student');
+        });
+
+        // Admin Login
+        const ADMIN_USERNAME = 'admin';
+        const ADMIN_PASSWORD = 'anakpriv123';
+
+        document.querySelector('.login-btn').addEventListener('click', () => {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                document.querySelector('.login-page').classList.add('hidden');
+                document.querySelector('.admin-page').classList.remove('hidden');
+                displayTasks('admin');
+            } else {
+                alert('Incorrect username or password');
+            }
+        });
+
+        // Add Task (Exam, Homework, Project)
+        document.querySelector('.add-task-btn').addEventListener('click', () => {
+            const category = document.getElementById('category').value;
+            const className = document.getElementById('class').value;
+            const taskName = document.getElementById('task-name').value;
+            const taskDate = document.getElementById('task-date').value;
+            const taskTime = document.getElementById('task-time').value;
+
+            if (taskName === '' || taskDate === '' || taskTime === '') {
+                alert('Please fill out all fields');
+                return;
+            }
+
+            const newTask = { 
+                category, 
+                className, 
+                taskName, 
+                taskDate, 
+                taskTime 
+            };
+
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.push(newTask);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+
+            displayTasks('admin');
+            displayTasks('student');
+        });
+
+        // Display Tasks
+        function displayTasks(page) {
+            const tasksList = page === 'admin' ? document.getElementById('tasks-list') : document.getElementById('student-tasks-list');
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+            tasksList.innerHTML = tasks.map((task, index) => {
+                return `
+                    <div class="schedule-item">
+                        <span>${task.category.toUpperCase()} - ${task.className}: ${task.taskName} - ${task.taskDate} ${task.taskTime}</span>
+                        ${page === 'admin' ? `<button class="delete-btn" data-index="${index}">Delete</button>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            if (page === 'admin') {
+                const deleteBtns = document.querySelectorAll('.delete-btn');
+                deleteBtns.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const index = e.target.getAttribute('data-index');
+                        tasks.splice(index, 1);
+                        localStorage.setItem('tasks', JSON.stringify(tasks));
+                        displayTasks('admin');
+                        displayTasks('student');
+                    });
+                });
+            }
+        }
+
+        // Logout Button
+        document.querySelectorAll('.logout-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelector('.choice-page').classList.remove('hidden');
+                document.querySelector('.login-page').classList.add('hidden');
+                document.querySelector('.admin-page').classList.add('hidden');
+                document.querySelector('.student-page').classList.add('hidden');
+            });
+        });
+
+        // Back Button Logic
+        document.querySelectorAll('.back-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelector('.choice-page').classList.remove('hidden');
+                document.querySelector('.login-page').classList.add('hidden');
+                document.querySelector('.admin-page').classList.add('hidden');
+                document.querySelector('.student-page').classList.add('hidden');
+            });
+        });
+    </script>
+
+</body>
+</html>
