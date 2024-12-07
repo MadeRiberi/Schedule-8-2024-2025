@@ -70,7 +70,7 @@
             font-size: 16px;
         }
 
-        .login-btn, .add-task-btn, .logout-btn, .back-btn {
+        .login-btn, .add-task-btn, .logout-btn, .back-btn, .notes-btn {
             background-color: #5cb85c;
             color: white;
             border: none;
@@ -85,7 +85,8 @@
         .login-btn:hover, 
         .add-task-btn:hover, 
         .logout-btn:hover, 
-        .back-btn:hover {
+        .back-btn:hover, 
+        .notes-btn:hover {
             background-color: #4cae4c;
         }
 
@@ -120,6 +121,35 @@
 
         .hidden {
             display: none;
+        }
+
+        .notes-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .notes-container textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .notes-list {
+            margin-top: 20px;
+            padding: 10px;
+        }
+
+        .notes-list .note {
+            background-color: #eef;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 5px solid #5cb85c;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -193,6 +223,9 @@
 
         <button class="logout-btn">Logout</button>
         <button class="back-btn">Back</button>
+        
+        <!-- Notes Button -->
+        <button class="notes-btn">Add Notes</button>
     </div>
 
     <!-- MURID BIASA PAGE -->
@@ -200,6 +233,17 @@
         <h1>Task List</h1>
         <div class="schedule-list" id="student-tasks-list"></div>
         <button class="logout-btn">Back to Home</button>
+        <button class="back-btn">Back</button>
+    </div>
+
+    <!-- Notes Section -->
+    <div class="container notes-container hidden">
+        <h1>Add Notes</h1>
+        <textarea id="notes-input" placeholder="Write your notes here..."></textarea>
+        <button class="notes-btn">Save Notes</button>
+
+        <h2>Notes</h2>
+        <div class="notes-list" id="notes-list"></div>
         <button class="back-btn">Back</button>
     </div>
 
@@ -290,15 +334,31 @@
             }
         }
 
-        // Logout Button
-        document.querySelectorAll('.logout-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                document.querySelector('.choice-page').classList.remove('hidden');
-                document.querySelector('.login-page').classList.add('hidden');
-                document.querySelector('.admin-page').classList.add('hidden');
-                document.querySelector('.student-page').classList.add('hidden');
-            });
+        // Save Notes
+        document.querySelector('.notes-btn').addEventListener('click', () => {
+            const notesInput = document.getElementById('notes-input').value;
+            if (notesInput === '') {
+                alert('Please write some notes!');
+                return;
+            }
+
+            let notes = JSON.parse(localStorage.getItem('notes')) || [];
+            notes.push(notesInput);
+            localStorage.setItem('notes', JSON.stringify(notes));
+
+            displayNotes();
+            document.getElementById('notes-input').value = ''; // Clear input field
         });
+
+        // Display Notes
+        function displayNotes() {
+            const notesList = document.getElementById('notes-list');
+            let notes = JSON.parse(localStorage.getItem('notes')) || [];
+
+            notesList.innerHTML = notes.map(note => {
+                return `<div class="note">${note}</div>`;
+            }).join('');
+        }
 
         // Back Button Logic
         document.querySelectorAll('.back-btn').forEach(button => {
@@ -307,6 +367,7 @@
                 document.querySelector('.login-page').classList.add('hidden');
                 document.querySelector('.admin-page').classList.add('hidden');
                 document.querySelector('.student-page').classList.add('hidden');
+                document.querySelector('.notes-container').classList.add('hidden');
             });
         });
     </script>
