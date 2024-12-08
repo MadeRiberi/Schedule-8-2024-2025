@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scheduler - Admin or Murid Biasa</title>
+    <title>Task Scheduler - Admin</title>
     <style>
         * {
             margin: 0;
@@ -62,7 +62,9 @@
         input[type="text"], 
         input[type="password"],
         input[type="date"],
-        input[type="time"] {
+        input[type="time"],
+        select,
+        textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
@@ -70,7 +72,7 @@
             font-size: 16px;
         }
 
-        .login-btn, .add-task-btn, .logout-btn, .back-btn, .notes-btn {
+        .login-btn, .add-task-btn, .logout-btn, .back-btn, .schedule-btn {
             background-color: #5cb85c;
             color: white;
             border: none;
@@ -84,14 +86,15 @@
 
         .login-btn:hover, 
         .add-task-btn:hover, 
-        .logout-btn:hover, 
-        .back-btn:hover, 
-        .notes-btn:hover {
+        .logout-btn:hover,
+        .back-btn:hover,
+        .schedule-btn:hover {
             background-color: #4cae4c;
         }
 
         .schedule-list {
             margin-top: 20px;
+            text-align: left;
         }
 
         .schedule-item {
@@ -100,13 +103,11 @@
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .schedule-item span {
             font-size: 16px;
+            display: block;
         }
 
         .delete-btn {
@@ -117,39 +118,54 @@
             font-size: 12px;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 10px;
         }
 
         .hidden {
             display: none;
         }
 
-        .notes-container {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-        }
-
-        .notes-container textarea {
+        .category-select {
             width: 100%;
-            height: 150px;
             padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+            margin-top: 10px;
         }
 
-        .notes-list {
+        #kisi-kisi-image {
             margin-top: 20px;
-            padding: 10px;
+            display: none;
         }
 
-        .notes-list .note {
-            background-color: #eef;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-left: 5px solid #5cb85c;
+        #kisi-kisi-image img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .category-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .category-buttons button {
+            background-color: #0275d8;
+            color: white;
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
             border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .category-buttons button:hover {
+            background-color: #025aa5;
         }
     </style>
 </head>
@@ -160,6 +176,7 @@
         <h1>Choose Your Role</h1>
         <button class="choice-btn" id="admin-choice">Admin</button>
         <button class="choice-btn" id="student-choice">Murid Biasa</button>
+        <button class="schedule-btn" id="schedule-choice">Schedule</button> <!-- New Schedule Button -->
     </div>
 
     <!-- ADMIN LOGIN PAGE -->
@@ -182,38 +199,58 @@
     <!-- ADMIN PAGE -->
     <div class="container admin-page hidden">
         <h1>Admin - Add Tasks</h1>
-        
+
+        <!-- Task Category Select (Dropdown like Class Category) -->
         <div class="form-group">
-            <label for="category">Category</label>
-            <select id="category">
+            <label for="task-category">Task Category</label>
+            <select id="task-category" class="category-select">
                 <option value="exam">Exam</option>
                 <option value="homework">Homework</option>
                 <option value="project">Project</option>
             </select>
         </div>
 
-        <div class="form-group">
-            <label for="class">Class</label>
-            <select id="class">
-                <option value="8A">8A</option>
-                <option value="8B">8B</option>
-                <option value="8C">8C</option>
-            </select>
-        </div>
+        <!-- Task Related Fields -->
+        <div id="exam-homework-project-fields">
+            <div class="form-group">
+                <label for="class-category">Class Category</label>
+                <select id="class-category" class="category-select">
+                    <option value="8a">8A</option>
+                    <option value="8b">8B</option>
+                    <option value="8c">8C</option>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label for="task-name">Task Title</label>
-            <input type="text" id="task-name" placeholder="Enter task title">
-        </div>
+            <!-- Task Name Input -->
+            <div class="form-group">
+                <label for="task-name">Task Title</label>
+                <input type="text" id="task-name" placeholder="Enter task title">
+            </div>
 
-        <div class="form-group">
-            <label for="task-date">Task Date</label>
-            <input type="date" id="task-date">
-        </div>
+            <!-- Deadline Input -->
+            <div class="form-group">
+                <label for="deadline">Deadline</label>
+                <input type="date" id="deadline">
+            </div>
 
-        <div class="form-group">
-            <label for="task-time">Task Time</label>
-            <input type="time" id="task-time">
+            <!-- Deadline Time Input -->
+            <div class="form-group">
+                <label for="deadline-time">Deadline Time</label>
+                <input type="time" id="deadline-time">
+            </div>
+
+            <!-- Image Upload Input -->
+            <div class="form-group">
+                <label for="task-image">Upload Image</label>
+                <input type="file" id="task-image" accept="image/*">
+                <img id="image-preview" class="image-preview" />
+            </div>
+
+            <!-- Notes Fields (Always show this section) -->
+            <div class="form-group">
+                <label for="note-content">Notes</label>
+                <textarea id="note-content" placeholder="Enter note content"></textarea>
+            </div>
         </div>
 
         <button class="add-task-btn">Add Task</button>
@@ -221,30 +258,20 @@
         <h2>Task List</h2>
         <div class="schedule-list" id="tasks-list"></div>
 
+        <button class="delete-all-btn">Delete All Tasks</button> <!-- Button to Delete All Tasks -->
         <button class="logout-btn">Logout</button>
-        <button class="back-btn">Back</button>
-        
-        <!-- Notes Button -->
-        <button class="notes-btn">Add Notes</button>
     </div>
 
     <!-- MURID BIASA PAGE -->
     <div class="container student-page hidden">
         <h1>Task List</h1>
         <div class="schedule-list" id="student-tasks-list"></div>
-        <button class="logout-btn">Back to Home</button>
-        <button class="back-btn">Back</button>
+        <button class="back-btn">Back to Home</button>
     </div>
 
-    <!-- Notes Section -->
-    <div class="container notes-container hidden">
-        <h1>Add Notes</h1>
-        <textarea id="notes-input" placeholder="Write your notes here..."></textarea>
-        <button class="notes-btn">Save Notes</button>
-
-        <h2>Notes</h2>
-        <div class="notes-list" id="notes-list"></div>
-        <button class="back-btn">Back</button>
+    <!-- Kisi - Kisi Image -->
+    <div id="kisi-kisi-image" class="hidden">
+        <img src="https://via.placeholder.com/600x400?text=Kisi+Kisi+Image" alt="Kisi Kisi Image">
     </div>
 
     <script>
@@ -258,6 +285,10 @@
             document.querySelector('.choice-page').classList.add('hidden');
             document.querySelector('.student-page').classList.remove('hidden');
             displayTasks('student');
+        });
+
+        document.getElementById('schedule-choice').addEventListener('click', () => { // New Schedule Button Action
+            alert('Schedule functionality is not implemented yet.');
         });
 
         // Admin Login
@@ -277,100 +308,106 @@
             }
         });
 
-        // Add Task (Exam, Homework, Project)
-        document.querySelector('.add-task-btn').addEventListener('click', () => {
-            const category = document.getElementById('category').value;
-            const className = document.getElementById('class').value;
-            const taskName = document.getElementById('task-name').value;
-            const taskDate = document.getElementById('task-date').value;
-            const taskTime = document.getElementById('task-time').value;
+        // Back Button for Admin Login
+        document.querySelector('.back-btn').addEventListener('click', () => {
+            document.querySelector('.login-page').classList.add('hidden');
+            document.querySelector('.choice-page').classList.remove('hidden');
+        });
 
-            if (taskName === '' || taskDate === '' || taskTime === '') {
-                alert('Please fill out all fields');
-                return;
+        // Back Button for Murid Biasa (Redirects to Home)
+        document.querySelectorAll('.back-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelector('.student-page').classList.add('hidden');
+                document.querySelector('.admin-page').classList.add('hidden');
+                document.querySelector('.choice-page').classList.remove('hidden');
+            });
+        });
+
+        // Logout for Admin and Student (Redirects to Home)
+        document.querySelector('.logout-btn').addEventListener('click', () => {
+            document.querySelector('.admin-page').classList.add('hidden');
+            document.querySelector('.student-page').classList.add('hidden');
+            document.querySelector('.choice-page').classList.remove('hidden');
+        });
+
+        // Task Category Change (Show Notes Section for All Categories)
+        document.getElementById('task-category').addEventListener('change', function() {
+            const taskCategory = this.value;
+            if (taskCategory === 'exam' || taskCategory === 'homework' || taskCategory === 'project') {
+                document.getElementById('exam-homework-project-fields').classList.remove('hidden');
+            } else {
+                document.getElementById('exam-homework-project-fields').classList.add('hidden');
             }
+        });
 
-            const newTask = { 
-                category, 
-                className, 
-                taskName, 
-                taskDate, 
-                taskTime 
-            };
+        // Add Task Logic
+        document.querySelector('.add-task-btn').addEventListener('click', () => {
+            const taskCategory = document.getElementById('task-category').value;
+            const taskName = document.getElementById('task-name').value;
+            const classCategory = document.getElementById('class-category').value;
+            const deadline = document.getElementById('deadline').value;
+            const deadlineTime = document.getElementById('deadline-time').value;
+            const noteContent = document.getElementById('note-content').value;
 
             let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            tasks.push(newTask);
-            localStorage.setItem('tasks', JSON.stringify(tasks));
 
+            if (taskCategory === 'notes') {
+                tasks.push({
+                    id: new Date().getTime(),
+                    taskCategory: taskCategory,
+                    taskName: taskName,
+                    noteContent: noteContent,
+                });
+            } else {
+                tasks.push({
+                    id: new Date().getTime(),
+                    taskCategory: taskCategory,
+                    taskName: taskName,
+                    classCategory: classCategory,
+                    deadline: deadline,
+                    deadlineTime: deadlineTime,
+                    noteContent: noteContent, // Add noteContent here
+                });
+            }
+
+            localStorage.setItem('tasks', JSON.stringify(tasks));
             displayTasks('admin');
-            displayTasks('student');
         });
 
         // Display Tasks
-        function displayTasks(page) {
-            const tasksList = page === 'admin' ? document.getElementById('tasks-list') : document.getElementById('student-tasks-list');
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        function displayTasks(role) {
+            const taskList = document.getElementById('tasks-list');
+            taskList.innerHTML = '';
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
-            tasksList.innerHTML = tasks.map((task, index) => {
-                return `
-                    <div class="schedule-item">
-                        <span>${task.category.toUpperCase()} - ${task.className}: ${task.taskName} - ${task.taskDate} ${task.taskTime}</span>
-                        ${page === 'admin' ? `<button class="delete-btn" data-index="${index}">Delete</button>` : ''}
-                    </div>
+            tasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.classList.add('schedule-item');
+                taskItem.innerHTML = `
+                    <span><strong>Task Name:</strong> ${task.taskName}</span>
+                    <span><strong>Category:</strong> ${task.taskCategory}</span>
+                    <span><strong>Class:</strong> ${task.classCategory || ''}</span>
+                    <span><strong>Deadline:</strong> ${task.deadline || ''} ${task.deadlineTime || ''}</span>
+                    <span><strong>Notes:</strong> ${task.noteContent || ''}</span>
+                    ${role === 'admin' ? `<button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>` : ''}
                 `;
-            }).join('');
-
-            if (page === 'admin') {
-                const deleteBtns = document.querySelectorAll('.delete-btn');
-                deleteBtns.forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const index = e.target.getAttribute('data-index');
-                        tasks.splice(index, 1);
-                        localStorage.setItem('tasks', JSON.stringify(tasks));
-                        displayTasks('admin');
-                        displayTasks('student');
-                    });
-                });
-            }
-        }
-
-        // Save Notes
-        document.querySelector('.notes-btn').addEventListener('click', () => {
-            const notesInput = document.getElementById('notes-input').value;
-            if (notesInput === '') {
-                alert('Please write some notes!');
-                return;
-            }
-
-            let notes = JSON.parse(localStorage.getItem('notes')) || [];
-            notes.push(notesInput);
-            localStorage.setItem('notes', JSON.stringify(notes));
-
-            displayNotes();
-            document.getElementById('notes-input').value = ''; // Clear input field
-        });
-
-        // Display Notes
-        function displayNotes() {
-            const notesList = document.getElementById('notes-list');
-            let notes = JSON.parse(localStorage.getItem('notes')) || [];
-
-            notesList.innerHTML = notes.map(note => {
-                return `<div class="note">${note}</div>`;
-            }).join('');
-        }
-
-        // Back Button Logic
-        document.querySelectorAll('.back-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                document.querySelector('.choice-page').classList.remove('hidden');
-                document.querySelector('.login-page').classList.add('hidden');
-                document.querySelector('.admin-page').classList.add('hidden');
-                document.querySelector('.student-page').classList.add('hidden');
-                document.querySelector('.notes-container').classList.add('hidden');
+                taskList.appendChild(taskItem);
             });
+        }
+
+        // Delete Task
+        function deleteTask(id) {
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks = tasks.filter(task => task.id !== id);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            displayTasks('admin');
+        }
+
+        // Delete All Tasks Logic
+        document.querySelector('.delete-all-btn').addEventListener('click', () => {
+            localStorage.removeItem('tasks');
+            displayTasks('admin');
         });
     </script>
-
 </body>
 </html>
