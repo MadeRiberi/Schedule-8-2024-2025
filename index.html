@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Scheduler - Admin</title>
+    <title>Task Scheduler</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
 
         .container {
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
             padding: 20px;
             text-align: center;
             background-color: #ffffff;
@@ -72,7 +72,7 @@
             font-size: 16px;
         }
 
-        .login-btn, .add-task-btn, .logout-btn, .back-btn, .schedule-btn {
+        .login-btn, .add-task-btn, .logout-btn, .back-btn, .schedule-btn, .delete-all-btn {
             background-color: #5cb85c;
             color: white;
             border: none;
@@ -88,7 +88,8 @@
         .add-task-btn:hover, 
         .logout-btn:hover,
         .back-btn:hover,
-        .schedule-btn:hover {
+        .schedule-btn:hover,
+        .delete-all-btn:hover {
             background-color: #4cae4c;
         }
 
@@ -131,23 +132,6 @@
             margin-top: 10px;
         }
 
-        #kisi-kisi-image {
-            margin-top: 20px;
-            display: none;
-        }
-
-        #kisi-kisi-image img {
-            max-width: 100%;
-            height: auto;
-        }
-
-        .image-preview {
-            max-width: 100%;
-            max-height: 200px;
-            margin-top: 10px;
-            display: none;
-        }
-
         .category-buttons {
             display: flex;
             justify-content: space-around;
@@ -176,7 +160,7 @@
         <h1>Choose Your Role</h1>
         <button class="choice-btn" id="admin-choice">Admin</button>
         <button class="choice-btn" id="student-choice">Murid Biasa</button>
-        <button class="schedule-btn" id="schedule-choice">Schedule</button> <!-- New Schedule Button -->
+        <button class="schedule-btn" id="schedule-choice">Schedule</button>
     </div>
 
     <!-- ADMIN LOGIN PAGE -->
@@ -204,6 +188,7 @@
         <div class="form-group">
             <label for="task-category">Task Category</label>
             <select id="task-category" class="category-select">
+                <option value="notes">Notes</option>
                 <option value="exam">Exam</option>
                 <option value="homework">Homework</option>
                 <option value="project">Project</option>
@@ -226,31 +211,31 @@
                 <label for="task-name">Task Title</label>
                 <input type="text" id="task-name" placeholder="Enter task title">
             </div>
+        </div>
 
-            <!-- Deadline Input -->
-            <div class="form-group">
-                <label for="deadline">Deadline</label>
-                <input type="date" id="deadline">
-            </div>
+        <!-- Notes Fields (Always show this section) -->
+        <div id="notes-fields" class="form-group hidden">
+            <label for="note-content">Notes</label>
+            <textarea id="note-content" placeholder="Enter note content"></textarea>
+        </div>
 
-            <!-- Deadline Time Input -->
-            <div class="form-group">
-                <label for="deadline-time">Deadline Time</label>
-                <input type="time" id="deadline-time">
-            </div>
+        <!-- Deadline for Notes -->
+        <div id="deadline-choice" class="form-group hidden">
+            <label for="deadline-choice-select">Choose Deadline</label>
+            <select id="deadline-choice-select" class="category-select">
+                <option value="no-deadline">No Deadline</option>
+                <option value="set-deadline">Set Deadline</option>
+            </select>
+        </div>
 
-            <!-- Image Upload Input -->
-            <div class="form-group">
-                <label for="task-image">Upload Image</label>
-                <input type="file" id="task-image" accept="image/*">
-                <img id="image-preview" class="image-preview" />
-            </div>
-
-            <!-- Notes Fields (Always show this section) -->
-            <div class="form-group">
-                <label for="note-content">Notes</label>
-                <textarea id="note-content" placeholder="Enter note content"></textarea>
-            </div>
+        <!-- Date and Time Inputs -->
+        <div id="deadline-fields" class="form-group hidden">
+            <label for="deadline">Deadline Date</label>
+            <input type="date" id="deadline">
+        </div>
+        <div id="time-fields" class="form-group hidden">
+            <label for="deadline-time">Deadline Time</label>
+            <input type="time" id="deadline-time">
         </div>
 
         <button class="add-task-btn">Add Task</button>
@@ -266,12 +251,7 @@
     <div class="container student-page hidden">
         <h1>Task List</h1>
         <div class="schedule-list" id="student-tasks-list"></div>
-        <button class="back-btn">Back to Home</button>
-    </div>
-
-    <!-- Kisi - Kisi Image -->
-    <div id="kisi-kisi-image" class="hidden">
-        <img src="https://via.placeholder.com/600x400?text=Kisi+Kisi+Image" alt="Kisi Kisi Image">
+        <button class="back-btn" id="back-to-home">Back to Home</button>
     </div>
 
     <script>
@@ -287,7 +267,7 @@
             displayTasks('student');
         });
 
-        document.getElementById('schedule-choice').addEventListener('click', () => { // New Schedule Button Action
+        document.getElementById('schedule-choice').addEventListener('click', () => {
             alert('Schedule functionality is not implemented yet.');
         });
 
@@ -302,6 +282,9 @@
             if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
                 document.querySelector('.login-page').classList.add('hidden');
                 document.querySelector('.admin-page').classList.remove('hidden');
+                // Automatically select "Notes" and show the deadline option
+                document.getElementById('task-category').value = 'notes';
+                document.getElementById('deadline-choice').classList.remove('hidden');
                 displayTasks('admin');
             } else {
                 alert('Incorrect username or password');
@@ -314,100 +297,105 @@
             document.querySelector('.choice-page').classList.remove('hidden');
         });
 
-        // Back Button for Murid Biasa (Redirects to Home)
-        document.querySelectorAll('.back-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                document.querySelector('.student-page').classList.add('hidden');
-                document.querySelector('.admin-page').classList.add('hidden');
-                document.querySelector('.choice-page').classList.remove('hidden');
-            });
+        // Back to Home Button in Student Page
+        document.getElementById('back-to-home').addEventListener('click', () => {
+            document.querySelector('.student-page').classList.add('hidden');
+            document.querySelector('.choice-page').classList.remove('hidden');
         });
 
-        // Logout for Admin and Student (Redirects to Home)
+        // Logout from Admin Page
         document.querySelector('.logout-btn').addEventListener('click', () => {
             document.querySelector('.admin-page').classList.add('hidden');
-            document.querySelector('.student-page').classList.add('hidden');
             document.querySelector('.choice-page').classList.remove('hidden');
         });
 
         // Task Category Change (Show Notes Section for All Categories)
         document.getElementById('task-category').addEventListener('change', function() {
             const taskCategory = this.value;
-            if (taskCategory === 'exam' || taskCategory === 'homework' || taskCategory === 'project') {
-                document.getElementById('exam-homework-project-fields').classList.remove('hidden');
+            if (taskCategory === 'notes') {
+                document.getElementById('notes-fields').classList.remove('hidden');
+                document.getElementById('deadline-choice').classList.remove('hidden');
             } else {
-                document.getElementById('exam-homework-project-fields').classList.add('hidden');
+                document.getElementById('notes-fields').classList.add('hidden');
+                document.getElementById('deadline-choice').classList.add('hidden');
             }
         });
 
-        // Add Task Logic
+        // Set Deadline option
+        document.getElementById('deadline-choice-select').addEventListener('change', function() {
+            if (this.value === 'set-deadline') {
+                document.getElementById('deadline-fields').classList.remove('hidden');
+                document.getElementById('time-fields').classList.remove('hidden');
+            } else {
+                document.getElementById('deadline-fields').classList.add('hidden');
+                document.getElementById('time-fields').classList.add('hidden');
+            }
+        });
+
+        // Add Task
         document.querySelector('.add-task-btn').addEventListener('click', () => {
             const taskCategory = document.getElementById('task-category').value;
             const taskName = document.getElementById('task-name').value;
-            const classCategory = document.getElementById('class-category').value;
-            const deadline = document.getElementById('deadline').value;
-            const deadlineTime = document.getElementById('deadline-time').value;
             const noteContent = document.getElementById('note-content').value;
+            const classCategory = document.getElementById('class-category') ? document.getElementById('class-category').value : '';
+            const deadline = document.getElementById('deadline') ? document.getElementById('deadline').value : '';
+            const deadlineTime = document.getElementById('deadline-time') ? document.getElementById('deadline-time').value : '';
 
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-
-            if (taskCategory === 'notes') {
-                tasks.push({
-                    id: new Date().getTime(),
-                    taskCategory: taskCategory,
-                    taskName: taskName,
-                    noteContent: noteContent,
+            if (taskCategory && taskName) {
+                const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+                tasks.push({ 
+                    taskCategory, 
+                    taskName, 
+                    noteContent, 
+                    classCategory, 
+                    deadline, 
+                    deadlineTime 
                 });
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                displayTasks('admin');
+                alert('Task added successfully!');
             } else {
-                tasks.push({
-                    id: new Date().getTime(),
-                    taskCategory: taskCategory,
-                    taskName: taskName,
-                    classCategory: classCategory,
-                    deadline: deadline,
-                    deadlineTime: deadlineTime,
-                    noteContent: noteContent, // Add noteContent here
-                });
+                alert('Please fill in all required fields.');
             }
-
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            displayTasks('admin');
         });
 
         // Display Tasks
         function displayTasks(role) {
-            const taskList = document.getElementById('tasks-list');
-            taskList.innerHTML = '';
             const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-
-            tasks.forEach(task => {
-                const taskItem = document.createElement('div');
-                taskItem.classList.add('schedule-item');
-                taskItem.innerHTML = `
-                    <span><strong>Task Name:</strong> ${task.taskName}</span>
-                    <span><strong>Category:</strong> ${task.taskCategory}</span>
-                    <span><strong>Class:</strong> ${task.classCategory || ''}</span>
-                    <span><strong>Deadline:</strong> ${task.deadline || ''} ${task.deadlineTime || ''}</span>
-                    <span><strong>Notes:</strong> ${task.noteContent || ''}</span>
-                    ${role === 'admin' ? `<button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>` : ''}
+            const taskList = document.getElementById(role === 'admin' ? 'tasks-list' : 'student-tasks-list');
+            taskList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const taskDiv = document.createElement('div');
+                taskDiv.classList.add('schedule-item');
+                taskDiv.innerHTML = `
+                    <span>Category: ${task.taskCategory}</span>
+                    <span>Task Name: ${task.taskName}</span>
+                    ${task.noteContent ? `<span>Notes: ${task.noteContent}</span>` : ''}
+                    ${task.deadline ? `<span>Deadline Date: ${task.deadline}</span>` : ''}
+                    ${task.deadlineTime ? `<span>Deadline Time: ${task.deadlineTime}</span>` : ''}
+                    ${role === 'admin' ? `<button class="delete-btn" onclick="deleteTask(${index})">Delete</button>` : ''}
                 `;
-                taskList.appendChild(taskItem);
+                taskList.appendChild(taskDiv);
             });
         }
 
         // Delete Task
-        function deleteTask(id) {
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            tasks = tasks.filter(task => task.id !== id);
+        function deleteTask(index) {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.splice(index, 1);
             localStorage.setItem('tasks', JSON.stringify(tasks));
             displayTasks('admin');
         }
 
-        // Delete All Tasks Logic
+        // Delete All Tasks
         document.querySelector('.delete-all-btn').addEventListener('click', () => {
-            localStorage.removeItem('tasks');
-            displayTasks('admin');
+            if (confirm('Are you sure you want to delete all tasks?')) {
+                localStorage.removeItem('tasks');
+                displayTasks('admin');
+                alert('All tasks have been deleted');
+            }
         });
     </script>
+
 </body>
 </html>
