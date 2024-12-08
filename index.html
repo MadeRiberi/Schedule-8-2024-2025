@@ -196,7 +196,7 @@
         </div>
 
         <!-- Task Related Fields -->
-        <div id="exam-homework-project-fields">
+        <div id="task-fields">
             <div class="form-group">
                 <label for="class-category">Class Category</label>
                 <select id="class-category" class="category-select">
@@ -213,22 +213,31 @@
             </div>
         </div>
 
-        <!-- Notes Fields (Always show this section) -->
+        <!-- Notes Option -->
+        <div class="form-group">
+            <label for="use-notes">Use Notes?</label>
+            <select id="use-notes" class="category-select">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+            </select>
+        </div>
+
+        <!-- Notes Fields (Visible when "Yes" is selected for Use Notes) -->
         <div id="notes-fields" class="form-group hidden">
             <label for="note-content">Notes</label>
             <textarea id="note-content" placeholder="Enter note content"></textarea>
         </div>
 
-        <!-- Deadline for Notes -->
-        <div id="deadline-choice" class="form-group hidden">
-            <label for="deadline-choice-select">Choose Deadline</label>
-            <select id="deadline-choice-select" class="category-select">
+        <!-- Deadline Option -->
+        <div class="form-group">
+            <label for="deadline-choice">Set Deadline</label>
+            <select id="deadline-choice" class="category-select">
                 <option value="no-deadline">No Deadline</option>
                 <option value="set-deadline">Set Deadline</option>
             </select>
         </div>
 
-        <!-- Date and Time Inputs -->
+        <!-- Deadline Date and Time -->
         <div id="deadline-fields" class="form-group hidden">
             <label for="deadline">Deadline Date</label>
             <input type="date" id="deadline">
@@ -282,10 +291,9 @@
             if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
                 document.querySelector('.login-page').classList.add('hidden');
                 document.querySelector('.admin-page').classList.remove('hidden');
-                // Automatically select "Notes" and show the deadline option
-                document.getElementById('task-category').value = 'notes';
-                document.getElementById('deadline-choice').classList.remove('hidden');
                 displayTasks('admin');
+                // Set "Use Notes" to "No" by default when logged in as Admin
+                document.getElementById('use-notes').value = 'no';
             } else {
                 alert('Incorrect username or password');
             }
@@ -297,103 +305,114 @@
             document.querySelector('.choice-page').classList.remove('hidden');
         });
 
-        // Back to Home Button in Student Page
-        document.getElementById('back-to-home').addEventListener('click', () => {
-            document.querySelector('.student-page').classList.add('hidden');
-            document.querySelector('.choice-page').classList.remove('hidden');
-        });
-
-        // Logout from Admin Page
-        document.querySelector('.logout-btn').addEventListener('click', () => {
-            document.querySelector('.admin-page').classList.add('hidden');
-            document.querySelector('.choice-page').classList.remove('hidden');
-        });
-
-        // Task Category Change (Show Notes Section for All Categories)
-        document.getElementById('task-category').addEventListener('change', function() {
-            const taskCategory = this.value;
-            if (taskCategory === 'notes') {
-                document.getElementById('notes-fields').classList.remove('hidden');
-                document.getElementById('deadline-choice').classList.remove('hidden');
-            } else {
-                document.getElementById('notes-fields').classList.add('hidden');
-                document.getElementById('deadline-choice').classList.add('hidden');
-            }
-        });
-
-        // Set Deadline option
-        document.getElementById('deadline-choice-select').addEventListener('change', function() {
+        // Task Deadline Change
+        document.getElementById('deadline-choice').addEventListener('change', function() {
+            const deadlineFields = document.getElementById('deadline-fields');
+            const timeFields = document.getElementById('time-fields');
             if (this.value === 'set-deadline') {
-                document.getElementById('deadline-fields').classList.remove('hidden');
-                document.getElementById('time-fields').classList.remove('hidden');
+                deadlineFields.classList.remove('hidden');
+                timeFields.classList.remove('hidden');
             } else {
-                document.getElementById('deadline-fields').classList.add('hidden');
-                document.getElementById('time-fields').classList.add('hidden');
+                deadlineFields.classList.add('hidden');
+                timeFields.classList.add('hidden');
             }
         });
+
+        // Use Notes Option
+        document.getElementById('use-notes').addEventListener('change', function() {
+            const notesFields = document.getElementById('notes-fields');
+            if (this.value === 'yes') {
+                notesFields.classList.remove('hidden');
+            } else {
+                notesFields.classList.add('hidden');
+            }
+        });
+
+        // Save Tasks to LocalStorage
+        function saveTasks(tasks) {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // Get Tasks from LocalStorage
+        function getTasks() {
+            const tasks = localStorage.getItem('tasks');
+            return tasks ? JSON.parse(tasks) : [];
+        }
+
+        // Display Tasks (Admin or Student View)
+        function displayTasks(role) {
+            const tasksList = document.getElementById(role === 'admin' ? 'tasks-list' : 'student-tasks-list');
+            const tasks = getTasks();
+            tasksList.innerHTML = '';
+            tasks.forEach(task => {
+                const taskDiv = document.createElement('div');
+                taskDiv.classList.add('schedule-item');
+                taskDiv.innerHTML = `
+                    <span>Task: ${task.name}</span>
+                    <span>Category: ${task.category}</span>
+                    <span>Class: ${task.classCategory}</span>
+                    ${task.notes ? `<span>Notes: ${task.notes}</span>` : ''}
+                    ${task.deadline ? `<span>Deadline: ${task.deadline} ${task.time ? `at ${task.time}` : ''}</span>` : ''}
+                    ${role === 'admin' ? '<button class="delete-btn">Delete</button>' : ''}
+                `;
+                tasksList.appendChild(taskDiv);
+            });
+        }
 
         // Add Task
         document.querySelector('.add-task-btn').addEventListener('click', () => {
             const taskCategory = document.getElementById('task-category').value;
             const taskName = document.getElementById('task-name').value;
-            const noteContent = document.getElementById('note-content').value;
-            const classCategory = document.getElementById('class-category') ? document.getElementById('class-category').value : '';
-            const deadline = document.getElementById('deadline') ? document.getElementById('deadline').value : '';
-            const deadlineTime = document.getElementById('deadline-time') ? document.getElementById('deadline-time').value : '';
+            const notes = document.getElementById('note-content').value;
+            const classCategory = document.getElementById('class-category').value;
+            const deadline = document.getElementById('deadline').value;
+            const time = document.getElementById('deadline-time').value;
+            const tasks = getTasks();
 
-            if (taskCategory && taskName) {
-                const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-                tasks.push({ 
-                    taskCategory, 
-                    taskName, 
-                    noteContent, 
-                    classCategory, 
-                    deadline, 
-                    deadlineTime 
-                });
-                localStorage.setItem('tasks', JSON.stringify(tasks));
+            if (!taskName) {
+                alert('Please enter a task title');
+                return;
+            }
+
+            tasks.push({
+                name: taskName,
+                category: taskCategory,
+                classCategory: classCategory,
+                notes: notes,
+                deadline: deadline,
+                time: time,
+            });
+
+            saveTasks(tasks);
+            displayTasks('admin');
+            document.getElementById('task-name').value = ''; // Clear task name
+            document.getElementById('note-content').value = ''; // Clear notes
+        });
+
+        // Delete Task (Admin Only)
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.classList.contains('delete-btn')) {
+                const taskDiv = e.target.closest('.schedule-item');
+                const taskName = taskDiv.querySelector('span').textContent.replace('Task: ', '');
+                const tasks = getTasks().filter(task => task.name !== taskName);
+                saveTasks(tasks);
                 displayTasks('admin');
-                alert('Task added successfully!');
-            } else {
-                alert('Please fill in all required fields.');
             }
         });
 
-        // Display Tasks
-        function displayTasks(role) {
-            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            const taskList = document.getElementById(role === 'admin' ? 'tasks-list' : 'student-tasks-list');
-            taskList.innerHTML = '';
-            tasks.forEach((task, index) => {
-                const taskDiv = document.createElement('div');
-                taskDiv.classList.add('schedule-item');
-                taskDiv.innerHTML = `
-                    <span>Category: ${task.taskCategory}</span>
-                    <span>Task Name: ${task.taskName}</span>
-                    ${task.noteContent ? `<span>Notes: ${task.noteContent}</span>` : ''}
-                    ${task.deadline ? `<span>Deadline Date: ${task.deadline}</span>` : ''}
-                    ${task.deadlineTime ? `<span>Deadline Time: ${task.deadlineTime}</span>` : ''}
-                    ${role === 'admin' ? `<button class="delete-btn" onclick="deleteTask(${index})">Delete</button>` : ''}
-                `;
-                taskList.appendChild(taskDiv);
-            });
-        }
-
-        // Delete Task
-        function deleteTask(index) {
-            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            tasks.splice(index, 1);
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            displayTasks('admin');
-        }
-
-        // Delete All Tasks
+        // Delete All Tasks (Admin Only)
         document.querySelector('.delete-all-btn').addEventListener('click', () => {
-            if (confirm('Are you sure you want to delete all tasks?')) {
+            const confirmDelete = confirm('Are you sure you want to delete all tasks?');
+            if (confirmDelete) {
                 localStorage.removeItem('tasks');
                 displayTasks('admin');
-                alert('All tasks have been deleted');
             }
+        });
+
+        // Back to Home (Murid Biasa)
+        document.getElementById('back-to-home').addEventListener('click', () => {
+            document.querySelector('.student-page').classList.add('hidden');
+            document.querySelector('.choice-page').classList.remove('hidden');
         });
     </script>
 
