@@ -192,6 +192,7 @@
                 <option value="exam">Exam</option>
                 <option value="homework">Homework</option>
                 <option value="project">Project</option>
+                <option value="kisi-kisi">Kisi - Kisi</option> <!-- Added Kisi - Kisi Option -->
             </select>
         </div>
 
@@ -200,6 +201,7 @@
             <div class="form-group">
                 <label for="class-category">Class Category</label>
                 <select id="class-category" class="category-select">
+                    <option value="all-class">All Class</option>
                     <option value="8a">8A</option>
                     <option value="8b">8B</option>
                     <option value="8c">8C</option>
@@ -305,7 +307,7 @@
             document.querySelector('.choice-page').classList.remove('hidden');
         });
 
-        // Task Deadline Change
+        // Toggle Deadline Fields
         document.getElementById('deadline-choice').addEventListener('change', function() {
             const deadlineFields = document.getElementById('deadline-fields');
             const timeFields = document.getElementById('time-fields');
