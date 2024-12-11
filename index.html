@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Scheduler</title>
     <style>
+        /* Your styles as provided earlier */
         * {
             margin: 0;
             padding: 0;
@@ -124,12 +125,12 @@
             border-color: #5cb85c;
             background-color: #ffffff;
         }
-
     </style>
 </head>
 <body>
 
-    <!-- CHOICE PAGE -->
+    <!-- Your HTML structure as provided earlier -->
+         <!-- CHOICE PAGE -->
     <div class="container choice-page">
         <h1>Choose Your Role</h1>
         <button class="choice-btn" id="admin-choice">Admin</button>
@@ -253,7 +254,7 @@
         document.getElementById('student-choice').addEventListener('click', () => {
             document.querySelector('.choice-page').classList.add('hidden');
             document.querySelector('.student-page').classList.remove('hidden');
-            loadTasks('student-tasks-list', false);  // student cannot delete
+            loadTasks('student-tasks-list', false); // student cannot delete
         });
 
         document.getElementById('schedule-choice').addEventListener('click', () => {
@@ -279,7 +280,7 @@
             if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
                 document.querySelector('.login-page').classList.add('hidden');
                 document.querySelector('.admin-page').classList.remove('hidden');
-                loadTasks('tasks-list', true);  // admin can delete
+                loadTasks('tasks-list', true); // admin can delete
             } else {
                 alert('Invalid login');
             }
@@ -331,7 +332,7 @@
                 taskElement.innerHTML = `
                     <strong>${task.name}</strong><br>
                     <em>${task.category}</em><br>
-                    ${task.class} - Deadline: ${task.deadlineDate} ${task.deadlineTime}<br>
+                    ${task.class} - Deadline: ${task.deadlineDate || 'No Deadline'} ${task.deadlineTime || ''}<br>
                     ${task.notes ? `<p>${task.notes}</p>` : ''}
                 `;
 
@@ -364,29 +365,11 @@
             localStorage.setItem('tasks', JSON.stringify(tasks));
         }
 
+        // Delete all tasks
         document.querySelector('.delete-all-btn').addEventListener('click', () => {
             localStorage.removeItem('tasks');
             loadTasks('tasks-list', true);
         });
-
-        // Schedule view for classes
-        document.getElementById('section-8a').addEventListener('click', () => {
-            loadTasks('student-tasks-list', false); 
-        });
-
-        document.getElementById('section-8b').addEventListener('click', () => {
-            loadTasks('student-tasks-list', false); 
-        });
-
-        document.getElementById('section-8c').addEventListener('click', () => {
-            loadTasks('student-tasks-list', false); 
-        });
-
-        document.getElementById('back-to-home').addEventListener('click', () => {
-            document.querySelector('.schedule-page').classList.add('hidden');
-            document.querySelector('.choice-page').classList.remove('hidden');
-        });
     </script>
-
 </body>
 </html>
